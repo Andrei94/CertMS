@@ -16,7 +16,7 @@ namespace CertMS.CertificateGenerator
 				Issuer = certificate.Issuer.Name,
 				ValidFrom = certificate.NotBefore,
 				ValidUntil = certificate.NotAfter,
-				SerialNumber = certificate.SerialNumber,
+				SerialNumber = certificate.SerialNumber.Trim(),
 				ExtraProperties = payload
 			};
 		}

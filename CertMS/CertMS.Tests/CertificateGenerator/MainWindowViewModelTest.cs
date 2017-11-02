@@ -1,13 +1,14 @@
 ﻿using System;
 using CertMS.CertificateGenerator;
+using CertMS.Tests.Utils;
 using Xunit;
-using static CertMS.Tests.TestUtils;
+using static CertMS.Tests.Utils.TestUtils;
 
-namespace CertMS.Tests
+namespace CertMS.Tests.CertificateGenerator
 {
 	public class MainWindowViewModelTest
 	{
-		private static MainWindowViewModel viewModel;
+		private static readonly MainWindowViewModel ViewModel = new MainWindowViewModel(new ViewDummy());
 
 		[Fact]
 		public void CantCreateCertificateWhenFieldsAreNotSet()
@@ -45,61 +46,52 @@ namespace CertMS.Tests
 
 		private static void CanExecuteWithCertificate(bool expected, CertificateModel cert)
 		{
-			var canExecute = false;
-			RunInStaThread(() =>
-			{
-				LazyLoad();
-				viewModel.Certificate = cert;
-				canExecute = viewModel.GenerateCertificate.CanExecute(null);
-			});
-			AreEqual(expected, canExecute);
+			ViewModel.Certificate = cert;
+			AreEqual(expected, ViewModel.GenerateCertificate.CanExecute(null));
 		}
 
 		[Fact]
 		public void CreateCertificateWhenAllFieldsAreSet()
 		{
-			RunInStaThread(() =>
+			ViewModel.Certificate = new CertificateModel
 			{
-				LazyLoad();
-				viewModel.Certificate = new CertificateModel
-				{
-					Subject = "test",
-					Issuer = "me",
-					Username = "qwerty",
-					Password = "1234",
-					ValidFrom = DateTime.Today,
-					ValidUntil = DateTime.Today
-				};
-				viewModel.GenerateCertificate.Execute(null);
-			});
-			AreNotEqual(string.Empty, viewModel.GeneratedCertificate);
+				Subject = "test",
+				Issuer = "me",
+				Username = "qwerty",
+				Password = "1234",
+				ValidFrom = DateTime.Today,
+				ValidUntil = DateTime.Today
+			};
+			ViewModel.GenerateCertificate.Execute(null);
+			AreNotEqual(string.Empty, ViewModel.GeneratedCertificate);
 		}
 
 		[Fact]
 		public void ThrowArgumentExceptionForInvalidDatesInCertificate()
 		{
-			RunInStaThread(() =>
+			ViewModel.DialogHelper = new DialogHelperDummy();
+			ViewModel.Certificate = new CertificateModel
 			{
-				LazyLoad();
-				viewModel.DialogHelper = new DialogHelperDummy();
-				viewModel.Certificate = new CertificateModel
-				{
-					Subject = "test",
-					Issuer = "me",
-					Username = "qwerty",
-					Password = "1234",
-					ValidFrom = DateTime.Today,
-					ValidUntil = DateTime.Today.AddDays(-1)
-				};
-				viewModel.GenerateCertificate.Execute(null);
-			});
-			True((viewModel.DialogHelper as DialogHelperDummy)?.Executed);
+				Subject = "test",
+				Issuer = "me",
+				Username = "qwerty",
+				Password = "1234",
+				ValidFrom = DateTime.Today,
+				ValidUntil = DateTime.Today.AddDays(-1)
+			};
+			ViewModel.GenerateCertificate.Execute(null);
+			True(((DialogHelperDummy) ViewModel.DialogHelper).Executed);
 		}
 
-		private static void LazyLoad()
+		[Theory]
+		[InlineData(true, "certificate")]
+		[InlineData(false, null)]
+		[InlineData(false, "")]
+		[InlineData(false, "   ")]
+		public void CanSaveCertificate(bool canExecute, string genCert)
 		{
-			if(viewModel == null)
-				viewModel = new MainWindowViewModel();
+			ViewModel.GeneratedCertificate = genCert;
+			AreEqual(canExecute, ViewModel.SaveCertificate.CanExecute(null));
 		}
 	}
 }

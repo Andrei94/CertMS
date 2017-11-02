@@ -1,5 +1,5 @@
 ﻿using Xunit;
-using static CertMS.Tests.TestUtils;
+using static CertMS.Tests.Utils.TestUtils;
 
 namespace CertMS.Tests
 {

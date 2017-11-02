@@ -2,17 +2,17 @@
 using System.Collections.Generic;
 using CertMS.CertificateGenerator;
 using Xunit;
-using static CertMS.Tests.TestUtils;
-using static CertMS.Helpers.Utils;
+using static CertMS.CertificateGenerator.CertificateGenerator;
+using static CertMS.Tests.Utils.TestUtils;
 
-namespace CertMS.Tests
+namespace CertMS.Tests.CertificateGenerator
 {
 	public class CertificateGeneratorTest
 	{
 		[Fact]
 		public void GenerateSignedCertificate()
 		{
-			var payload = DictionaryOf(new[]
+			var payload = Helpers.Utils.DictionaryOf(new[]
 			{
 				new[] {"Username", "qwerty"},
 				new[] {"Password", "1234"},
@@ -25,7 +25,7 @@ namespace CertMS.Tests
 				ValidFrom = DateTime.Today,
 				ValidUntil = DateTime.Today.AddDays(1),
 				ExtraProperties = payload
-			}, CreateSignedCertificate("test", "me", DateTime.Today, DateTime.Today.AddDays(1), payload));
+			}, CreateCertificate("test", "me", DateTime.Today, DateTime.Today.AddDays(1), payload));
 		}
 
 		private static void GeneratedCertificateHas(CertificateDto expected, CertificateDto actual)
@@ -42,26 +42,26 @@ namespace CertMS.Tests
 		[Fact]
 		public void ThrowInvalidCertificateDatesExceptionForGeneratedExpiredCertificate()
 		{
-			ThrowsInvalidCertificateDatesException(() => CreateSignedCertificate("test", "test", DateTime.Today, DateTime.Today.AddDays(-1)));
-			ThrowsInvalidCertificateDatesException(() => CreateSignedCertificate("test", "test", DateTime.Today.AddDays(1), DateTime.Today));
+			ThrowsInvalidCertificateDatesException(() => CreateCertificate("test", "test", DateTime.Today, DateTime.Today.AddDays(-1)));
+			ThrowsInvalidCertificateDatesException(() => CreateCertificate("test", "test", DateTime.Today.AddDays(1), DateTime.Today));
 		}
 
 		[Fact]
 		public void ThrowArgumentExceptionForInvalidExtraInformation()
 		{
-			ThrowsArgumentException(() => CreateSignedCertificate("test", "test", DateTime.Today, DateTime.Today.AddDays(1), DictionaryOf(new[]
+			ThrowsArgumentException(() => CreateCertificate("test", "test", DateTime.Today, DateTime.Today.AddDays(1), Helpers.Utils.DictionaryOf(new[]
 			{
 				new[] {"Username", "qwerty", "bla"}
 			})));
-			ThrowsArgumentException(() => CreateSignedCertificate("test", "test", DateTime.Today, DateTime.Today.AddDays(1), DictionaryOf(new[]
+			ThrowsArgumentException(() => CreateCertificate("test", "test", DateTime.Today, DateTime.Today.AddDays(1), Helpers.Utils.DictionaryOf(new[]
 			{
 				new[] {"Username"}
 			})));
 		}
 
-		private static CertificateDto CreateSignedCertificate(string subject, string issuer, DateTime validFrom, DateTime validUntil, IDictionary<string, string> payload = null)
+		private static CertificateDto CreateCertificate(string subject, string issuer, DateTime validFrom, DateTime validUntil, IDictionary<string, string> payload = null)
 		{
-			return CertificateGenerator.CertificateGenerator.CreateSignedCertificate(subject, issuer, validFrom, validUntil, payload ?? new Dictionary<string, string>());
+			return CreateSignedCertificate(subject, issuer, validFrom, validUntil, payload ?? new Dictionary<string, string>());
 		}
 	}
 }

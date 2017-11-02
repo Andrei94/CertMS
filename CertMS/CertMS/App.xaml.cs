@@ -10,7 +10,7 @@ namespace CertMS
 		protected override void OnStartup(StartupEventArgs e)
 	    {
 		    base.OnStartup(e);
-		    mainViewModel = new MainWindowViewModel();
+		    mainViewModel = new MainWindowViewModel(new MainWindow());
 		    mainViewModel.Show();
 	    }
 

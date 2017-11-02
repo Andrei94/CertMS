@@ -1,6 +1,6 @@
 ﻿using CertMS.Helpers;
 
-namespace CertMS.Tests
+namespace CertMS.Tests.CertificateGenerator
 {
 	internal class DialogHelperDummy : IDialogHelper
 	{

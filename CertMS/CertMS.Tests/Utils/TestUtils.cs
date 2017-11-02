@@ -3,7 +3,7 @@ using System.Threading;
 using CertMS.CertificateGenerator;
 using Xunit;
 
-namespace CertMS.Tests
+namespace CertMS.Tests.Utils
 {
 	internal static class TestUtils
 	{

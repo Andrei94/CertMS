@@ -1,4 +1,7 @@
-﻿using System.Diagnostics.CodeAnalysis;
+﻿using System;
+using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
+using System.Text;
 using CertMS.Helpers;
 using WPFCommonUI;
 
@@ -56,7 +59,9 @@ namespace CertMS.CertificateGenerator
 					Certificate.ValidUntil.HasValue &&
 					!string.IsNullOrWhiteSpace(Certificate.Username));
 
-		public MainWindowViewModel() : base(new MainWindow())
+		public RelayCommand SaveCertificate => new RelayCommand(obj => Process.Start(new ProcessStartInfo {FileName = @"D:\Programming\Master\CertMSCRUD\CertMSCRUD\bin\Debug\CertMSCRUD.exe", Arguments = "save " + Convert.ToBase64String(Encoding.ASCII.GetBytes(generatedCertificate))}), () => !string.IsNullOrWhiteSpace(generatedCertificate));
+
+		public MainWindowViewModel(IMainView view) : base(view)
 		{
 			DialogHelper = new DialogHelper();
 		}
