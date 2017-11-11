@@ -93,5 +93,16 @@ namespace CertMS.Tests.CertificateGenerator
 			ViewModel.GeneratedCertificate = genCert;
 			AreEqual(canExecute, ViewModel.SaveCertificate.CanExecute(null));
 		}
+
+		[Theory]
+		[InlineData(true, "certificate")]
+		[InlineData(false, null)]
+		[InlineData(false, "")]
+		[InlineData(false, "   ")]
+		public void CanUpdateCertificate(bool canExecute, string genCert)
+		{
+			ViewModel.GeneratedCertificate = genCert;
+			AreEqual(canExecute, ViewModel.UpdateCertificate.CanExecute(null));
+		}
 	}
 }
