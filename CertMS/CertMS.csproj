@@ -71,14 +71,17 @@
     <Compile Include="CertificateGenerator\CertificateListDto.cs" />
     <Compile Include="CertificateGenerator\CertificateModel.cs" />
     <Compile Include="CertificateGenerator\CertificateParser.cs" />
-    <Compile Include="CertificatesList.xaml.cs">
+    <Compile Include="CustomControls\CertificatesList.xaml.cs">
       <DependentUpon>CertificatesList.xaml</DependentUpon>
     </Compile>
     <Compile Include="CertificateWithPayload.cs" />
     <Compile Include="Helpers\DialogHelper.cs" />
     <Compile Include="Helpers\IDialogHelper.cs" />
     <Compile Include="Helpers\Utils.cs" />
-    <Page Include="CertificatesList.xaml">
+    <Compile Include="CustomControls\Search.xaml.cs">
+      <DependentUpon>Search.xaml</DependentUpon>
+    </Compile>
+    <Page Include="CustomControls\CertificatesList.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -109,6 +112,10 @@
       <DependentUpon>MainWindow.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
+    <Page Include="CustomControls\Search.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="Themes\Generic.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>

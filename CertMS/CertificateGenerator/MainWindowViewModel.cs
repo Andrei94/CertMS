@@ -62,20 +62,22 @@ namespace CertMS.CertificateGenerator
 					Certificate.ValidUntil.HasValue &&
 					!string.IsNullOrWhiteSpace(Certificate.Username));
 
-		public RelayCommand SaveCertificate => new RelayCommand(obj =>
-			DialogHelper.ShowMessageBox(CallProgramWith("save " + Convert.ToBase64String(Encoding.ASCII.GetBytes(generatedCertificate)))), IsCertificateGenerated);
+		private const string CrudPath = @"D:\Programming\Master\CertMSCRUD\CertMSCRUD\bin\Debug\CertMSCRUD.exe";
 
-		public RelayCommand SaveDuplicateCertificate => new RelayCommand(obj => DialogHelper.ShowMessageBox(CallProgramWith("save_duplicate")));
-		public RelayCommand DeleteCertificate => new RelayCommand(obj => DialogHelper.ShowMessageBox(CallProgramWith("delete " + "1234")));
+		public RelayCommand SaveCertificate => new RelayCommand(obj =>
+			DialogHelper.ShowMessageBox(CallProgramWith(CrudPath, "save " + Convert.ToBase64String(Encoding.ASCII.GetBytes(generatedCertificate)))), IsCertificateGenerated);
+
+		public RelayCommand SaveDuplicateCertificate => new RelayCommand(obj => DialogHelper.ShowMessageBox(CallProgramWith(CrudPath, "save_duplicate")));
+		public RelayCommand DeleteCertificate => new RelayCommand(obj => DialogHelper.ShowMessageBox(CallProgramWith(CrudPath, "delete " + "1234")));
 
 		public RelayCommand UpdateCertificate => new RelayCommand(obj =>
-			DialogHelper.ShowMessageBox(CallProgramWith("update " + "1234" + ";" + Convert.ToBase64String(Encoding.ASCII.GetBytes(generatedCertificate)))), IsCertificateGenerated);
+			DialogHelper.ShowMessageBox(CallProgramWith(CrudPath, "update " + "1234" + ";" + Convert.ToBase64String(Encoding.ASCII.GetBytes(generatedCertificate)))), IsCertificateGenerated);
 
-		private static string CallProgramWith(string arguments)
+		private static string CallProgramWith(string program, string arguments)
 		{
 			var proc = new ProcessStartInfo
 			{
-				FileName = CrudPath,
+				FileName = program,
 				Arguments = arguments,
 				UseShellExecute = false,
 				RedirectStandardOutput = true
@@ -103,7 +105,7 @@ namespace CertMS.CertificateGenerator
 			get
 			{
 				if(certificates.Count == 0)
-					Certificates = CallProgramWith("getAll").Split(';').Select(c => parser.Convert(c)).ToList();
+					Certificates = CallProgramWith(CrudPath, "getAll").Split(';').Select(c => parser.Convert(c)).ToList();
 
 				return certificates;
 			}
@@ -115,7 +117,6 @@ namespace CertMS.CertificateGenerator
 		}
 
 		private CertificateListDto certificate;
-		private const string CrudPath = @"D:\Programming\Master\CertMSCRUD\CertMSCRUD\bin\Debug\CertMSCRUD.exe";
 
 		public CertificateListDto SelectedCertificate
 		{
@@ -126,6 +127,21 @@ namespace CertMS.CertificateGenerator
 				RaisePropertyChanged("SelectedCertificate");
 			}
 		}
+
+		private const string SearchPath = @"D:\Programming\Master\CertMSSearch\CertMSSearch\bin\Debug\CertMSSearch.exe";
+
+		private string searchText;
+		public string SearchText
+		{
+			get => searchText;
+			set
+			{
+				searchText = value;
+				RaisePropertyChanged("SearchText");
+			}
+		}
+
+		public RelayCommand Search => new RelayCommand(obj => Certificates = CallProgramWith(SearchPath, "search " + CertificateParser.ConvertToBase64(searchText)).Split(';').Select(c => parser.Convert(c)).ToList(), () => !string.IsNullOrWhiteSpace(SearchText));
 
 		public MainWindowViewModel(IMainView view) : base(view)
 		{
