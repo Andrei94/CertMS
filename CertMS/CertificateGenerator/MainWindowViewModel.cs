@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
+using System.Net.Http;
 using System.Text;
 using CertMS.Helpers;
 using WPFCommonUI;
@@ -62,7 +62,7 @@ namespace CertMS.CertificateGenerator
 					Certificate.ValidUntil.HasValue &&
 					!string.IsNullOrWhiteSpace(Certificate.Username));
 
-		private const string CrudPath = @"D:\Programming\Master\CertMSCRUD\CertMSCRUD\bin\Debug\CertMSCRUD.exe";
+		private const string CrudPath = "CertMSCRUD";
 
 		public RelayCommand SaveCertificate => new RelayCommand(obj =>
 			DialogHelper.ShowMessageBox(CallProgramWith(CrudPath, "save", Convert.ToBase64String(Encoding.ASCII.GetBytes(generatedCertificate)))), IsCertificateGenerated);
@@ -75,28 +75,19 @@ namespace CertMS.CertificateGenerator
 
 		private static string CallProgramWith(string program, params string[] arguments)
 		{
-			var proc = new ProcessStartInfo
-			{
-				FileName = program,
-				Arguments = string.Join(" ", arguments),
-				UseShellExecute = false,
-				RedirectStandardOutput = true
-			};
-			string response;
-			using(var process = Process.Start(proc))
-			{
-				using(var reader = process?.StandardOutput)
-				{
-					response = reader?.ReadToEnd();
-				}
-			}
-			return response;
+			var client = new HttpClient();
+			var values = new Dictionary<string, string>();
+			for(var i=0; i < arguments.Length; i++)
+				values.Add(i.ToString(), arguments[i]);
+			var content = new FormUrlEncodedContent(values);
+
+			var response = client.PostAsync($"http://localhost:8080/start/{program}", content).Result;
+
+			var responseString = response.Content.ReadAsStringAsync().Result;
+			return responseString;
 		}
 
-		private bool IsCertificateGenerated()
-		{
-			return !string.IsNullOrWhiteSpace(generatedCertificate);
-		}
+		private bool IsCertificateGenerated() => !string.IsNullOrWhiteSpace(generatedCertificate);
 
 		private List<CertificateListDto> certificates = new List<CertificateListDto>();
 		private readonly CertificateParser parser = new CertificateParser();
@@ -129,7 +120,7 @@ namespace CertMS.CertificateGenerator
 			}
 		}
 
-		private const string SearchPath = @"D:\Programming\Master\CertMSSearch\CertMSSearch\bin\Debug\CertMSSearch.exe";
+		private const string SearchPath = "CertMSSearch";
 
 		private string searchText;
 
@@ -171,7 +162,7 @@ namespace CertMS.CertificateGenerator
 			}
 		}
 
-		private const string GamePath = @"D:\Programming\Master\CertMSGame\CertMSGame\bin\Debug\CertMSGame.exe";
+		private const string GamePath = "CertMSGame";
 
 		public RelayCommand Sign => new RelayCommand(obj => Signature = CallProgramWith(GamePath, "sign", Convert.ToBase64String(Encoding.ASCII.GetBytes(SignGame))),
 			() => !string.IsNullOrWhiteSpace(SignGame));
