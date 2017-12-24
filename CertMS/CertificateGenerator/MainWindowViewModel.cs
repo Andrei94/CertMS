@@ -20,7 +20,7 @@ namespace CertMS.CertificateGenerator
 			set
 			{
 				cert = value;
-				RaisePropertyChanged("Certificate");
+				RaisePropertyChanged(nameof(Certificate));
 			}
 		}
 
@@ -32,7 +32,7 @@ namespace CertMS.CertificateGenerator
 			set
 			{
 				generatedCertificate = value;
-				RaisePropertyChanged("GeneratedCertificate");
+				RaisePropertyChanged(nameof(GeneratedCertificate));
 			}
 		}
 
@@ -65,20 +65,20 @@ namespace CertMS.CertificateGenerator
 		private const string CrudPath = @"D:\Programming\Master\CertMSCRUD\CertMSCRUD\bin\Debug\CertMSCRUD.exe";
 
 		public RelayCommand SaveCertificate => new RelayCommand(obj =>
-			DialogHelper.ShowMessageBox(CallProgramWith(CrudPath, "save " + Convert.ToBase64String(Encoding.ASCII.GetBytes(generatedCertificate)))), IsCertificateGenerated);
+			DialogHelper.ShowMessageBox(CallProgramWith(CrudPath, "save", Convert.ToBase64String(Encoding.ASCII.GetBytes(generatedCertificate)))), IsCertificateGenerated);
 
 		public RelayCommand SaveDuplicateCertificate => new RelayCommand(obj => DialogHelper.ShowMessageBox(CallProgramWith(CrudPath, "save_duplicate")));
-		public RelayCommand DeleteCertificate => new RelayCommand(obj => DialogHelper.ShowMessageBox(CallProgramWith(CrudPath, "delete " + "1234")));
+		public RelayCommand DeleteCertificate => new RelayCommand(obj => DialogHelper.ShowMessageBox(CallProgramWith(CrudPath, "delete", "1234")));
 
 		public RelayCommand UpdateCertificate => new RelayCommand(obj =>
-			DialogHelper.ShowMessageBox(CallProgramWith(CrudPath, "update " + "1234" + ";" + Convert.ToBase64String(Encoding.ASCII.GetBytes(generatedCertificate)))), IsCertificateGenerated);
+			DialogHelper.ShowMessageBox(CallProgramWith(CrudPath, "update", "1234" + ";", Convert.ToBase64String(Encoding.ASCII.GetBytes(generatedCertificate)))), IsCertificateGenerated);
 
-		private static string CallProgramWith(string program, string arguments)
+		private static string CallProgramWith(string program, params string[] arguments)
 		{
 			var proc = new ProcessStartInfo
 			{
 				FileName = program,
-				Arguments = arguments,
+				Arguments = string.Join(" ", arguments),
 				UseShellExecute = false,
 				RedirectStandardOutput = true
 			};
@@ -100,6 +100,7 @@ namespace CertMS.CertificateGenerator
 
 		private List<CertificateListDto> certificates = new List<CertificateListDto>();
 		private readonly CertificateParser parser = new CertificateParser();
+
 		public List<CertificateListDto> Certificates
 		{
 			get
@@ -112,7 +113,7 @@ namespace CertMS.CertificateGenerator
 			set
 			{
 				certificates = value;
-				RaisePropertyChanged("Certificates");
+				RaisePropertyChanged(nameof(Certificates));
 			}
 		}
 
@@ -124,38 +125,77 @@ namespace CertMS.CertificateGenerator
 			set
 			{
 				certificate = value;
-				RaisePropertyChanged("SelectedCertificate");
+				RaisePropertyChanged(nameof(SelectedCertificate));
 			}
 		}
 
 		private const string SearchPath = @"D:\Programming\Master\CertMSSearch\CertMSSearch\bin\Debug\CertMSSearch.exe";
 
 		private string searchText;
+
 		public string SearchText
 		{
 			get => searchText;
 			set
 			{
 				searchText = value;
-				RaisePropertyChanged("SearchText");
+				RaisePropertyChanged(nameof(SearchText));
 			}
 		}
 
-		public RelayCommand Search => new RelayCommand(obj => Certificates = CallProgramWith(SearchPath, "search " + CertificateParser.ConvertToBase64(searchText)).Split(';').Select(c => parser.Convert(c)).ToList(), () => !string.IsNullOrWhiteSpace(SearchText));
+		public RelayCommand Search =>
+			new RelayCommand(obj => Certificates = CallProgramWith(SearchPath, "search", CertificateParser.ConvertToBase64(searchText)).Split(';').Select(c => parser.Convert(c)).ToList(),
+				() => !string.IsNullOrWhiteSpace(SearchText));
+
+		private string signGame;
+
+		public string SignGame
+		{
+			get => signGame;
+			set
+			{
+				signGame = value;
+				RaisePropertyChanged(nameof(SignGame));
+			}
+		}
+
+		private string signature;
+
+		public string Signature
+		{
+			get => signature;
+			set
+			{
+				signature = value;
+				RaisePropertyChanged(nameof(Signature));
+			}
+		}
+
+		private const string GamePath = @"D:\Programming\Master\CertMSGame\CertMSGame\bin\Debug\CertMSGame.exe";
+
+		public RelayCommand Sign => new RelayCommand(obj => Signature = CallProgramWith(GamePath, "sign", Convert.ToBase64String(Encoding.ASCII.GetBytes(SignGame))),
+			() => !string.IsNullOrWhiteSpace(SignGame));
+
+		private string verifyGame;
+
+		public string VerifyGame
+		{
+			get => verifyGame;
+			set
+			{
+				verifyGame = value;
+				RaisePropertyChanged(nameof(VerifyGame));
+			}
+		}
+
+		public RelayCommand Verify => new RelayCommand(obj =>
+			DialogHelper.ShowMessageBox(CallProgramWith(GamePath, "verify", Convert.ToBase64String(Encoding.ASCII.GetBytes(VerifyGame)), Signature).Trim().Equals("True")
+				? "Pair valid"
+				: "Invalid data/signature pair"), () => !string.IsNullOrWhiteSpace(VerifyGame) && !string.IsNullOrWhiteSpace(Signature));
 
 		public MainWindowViewModel(IMainView view) : base(view)
 		{
 			DialogHelper = new DialogHelper();
-		}
-
-		public void Show()
-		{
-			View.Show();
-		}
-
-		public void Close()
-		{
-			View.Close();
 		}
 	}
 }

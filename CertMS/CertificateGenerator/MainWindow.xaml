@@ -48,7 +48,12 @@
 					<certMs:CertificatesList />
 				</StackPanel>
 			</TabItem>
+			<TabItem Header="Sign">
+				<StackPanel Orientation="Vertical">
+					<customControls:Sign />
+					<customControls:Verify />
+				</StackPanel>
+			</TabItem>
 		</TabControl>
 	</Grid>
-
 </Window>

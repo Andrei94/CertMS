@@ -11,13 +11,13 @@ namespace CertMS
 	    {
 		    base.OnStartup(e);
 		    mainViewModel = new MainWindowViewModel(new MainWindow());
-		    mainViewModel.Show();
+		    mainViewModel.View.Show();
 	    }
 
 	    protected override void OnExit(ExitEventArgs e)
 	    {
 		    base.OnExit(e);
-		    mainViewModel.Close();
+		    mainViewModel.View.Close();
 	    }
 	}
 }

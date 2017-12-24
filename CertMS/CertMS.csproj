@@ -75,6 +75,12 @@
       <DependentUpon>CertificatesList.xaml</DependentUpon>
     </Compile>
     <Compile Include="CertificateWithPayload.cs" />
+    <Compile Include="CustomControls\Sign.xaml.cs">
+      <DependentUpon>Sign.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="CustomControls\Verify.xaml.cs">
+      <DependentUpon>Verify.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Helpers\DialogHelper.cs" />
     <Compile Include="Helpers\IDialogHelper.cs" />
     <Compile Include="Helpers\Utils.cs" />
@@ -113,6 +119,14 @@
       <SubType>Code</SubType>
     </Compile>
     <Page Include="CustomControls\Search.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="CustomControls\Sign.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="CustomControls\Verify.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
