@@ -4,9 +4,9 @@ using System.Text;
 
 namespace CertMS.CertificateGenerator
 {
-	internal class CertificateParser
+	internal static class CertificateParser
 	{
-		public CertificateListDto Convert(string certData)
+		public static CertificateListDto Convert(string certData)
 		{
 			var certificateEntries = ConvertFromBase64(certData).Split(new[] { ": ", Environment.NewLine }, StringSplitOptions.RemoveEmptyEntries);
 			if (certificateEntries.Length < 4)

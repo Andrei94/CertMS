@@ -4,7 +4,6 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:customControls="clr-namespace:CertMS.CustomControls"
-        xmlns:certMs="clr-namespace:CertMS"
         mc:Ignorable="d"
         Title="MainWindow" Height="400" Width="525">
 	<Grid>
@@ -44,8 +43,8 @@
 			</TabItem>
 			<TabItem Header="Search">
 				<StackPanel Orientation="Vertical">
-					<certMs:Search />
-					<certMs:CertificatesList />
+					<customControls:Search />
+					<customControls:CertificatesList />
 				</StackPanel>
 			</TabItem>
 			<TabItem Header="Sign">

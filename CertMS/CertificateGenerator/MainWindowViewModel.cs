@@ -1,11 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
-using System.Net.Http;
-using System.Text;
+using System.Threading.Tasks;
 using CertMS.Helpers;
 using WPFCommonUI;
+using static CertMS.Helpers.ProgramCaller;
 
 namespace CertMS.CertificateGenerator
 {
@@ -54,51 +53,44 @@ namespace CertMS.CertificateGenerator
 					{
 						DialogHelper.ShowMessageBox("Certificate dates are not valid");
 					}
-				},
-				() =>
-					!string.IsNullOrWhiteSpace(Certificate.Subject) &&
-					!string.IsNullOrWhiteSpace(Certificate.Issuer) &&
-					Certificate.ValidFrom.HasValue &&
-					Certificate.ValidUntil.HasValue &&
-					!string.IsNullOrWhiteSpace(Certificate.Username));
+				}, Certificate.IsFilled);
 
-		private const string CrudPath = "CertMSCRUD";
+		public RelayCommand SaveCertificate => new RelayCommand(
+			obj =>
+			{
+				var response = CallProgramWith(AppProperties.CRUD, AppProperties.CRUDSave, CertificateParser.ConvertToBase64(generatedCertificate));
+				SyncCertificates();
+				DialogHelper.ShowMessageBox(response);
+			}, IsCertificateGenerated);
 
-		public RelayCommand SaveCertificate => new RelayCommand(obj =>
-			DialogHelper.ShowMessageBox(CallProgramWith(CrudPath, "save", Convert.ToBase64String(Encoding.ASCII.GetBytes(generatedCertificate)))), IsCertificateGenerated);
+		public RelayCommand SaveDuplicateCertificate => new RelayCommand(obj => DialogHelper.ShowMessageBox(CallProgramWith(AppProperties.CRUD, AppProperties.CRUDSaveDuplicate)));
 
-		public RelayCommand SaveDuplicateCertificate => new RelayCommand(obj => DialogHelper.ShowMessageBox(CallProgramWith(CrudPath, "save_duplicate")));
-		public RelayCommand DeleteCertificate => new RelayCommand(obj => DialogHelper.ShowMessageBox(CallProgramWith(CrudPath, "delete", "1234")));
+		public RelayCommand DeleteCertificate =>
+			new RelayCommand(obj =>
+			{
+				var response = CallProgramWith(AppProperties.CRUD, AppProperties.CRUDDelete, SelectedCertificate.SerialNumber);
+				SyncCertificates();
+				DialogHelper.ShowMessageBox(response);
+			}, () => SelectedCertificate != null);
 
 		public RelayCommand UpdateCertificate => new RelayCommand(obj =>
-			DialogHelper.ShowMessageBox(CallProgramWith(CrudPath, "update", "1234" + ";", Convert.ToBase64String(Encoding.ASCII.GetBytes(generatedCertificate)))), IsCertificateGenerated);
-
-		private static string CallProgramWith(string program, params string[] arguments)
-		{
-			var client = new HttpClient();
-			var values = new Dictionary<string, string>();
-			for(var i=0; i < arguments.Length; i++)
-				values.Add(i.ToString(), arguments[i]);
-			var content = new FormUrlEncodedContent(values);
-
-			var response = client.PostAsync($"http://localhost:8080/start/{program}", content).Result;
-
-			var responseString = response.Content.ReadAsStringAsync().Result;
-			return responseString;
-		}
+			{
+				var respones = CallProgramWith(AppProperties.CRUD, AppProperties.CRUDUpdate, SelectedCertificate.SerialNumber + ";",
+					CertificateParser.ConvertToBase64(generatedCertificate));
+				SyncCertificates();
+				DialogHelper.ShowMessageBox(respones);
+			},
+			IsCertificateGenerated);
 
 		private bool IsCertificateGenerated() => !string.IsNullOrWhiteSpace(generatedCertificate);
 
 		private List<CertificateListDto> certificates = new List<CertificateListDto>();
-		private readonly CertificateParser parser = new CertificateParser();
-
 		public List<CertificateListDto> Certificates
 		{
 			get
 			{
 				if(certificates.Count == 0)
-					Certificates = CallProgramWith(CrudPath, "getAll").Split(';').Select(c => parser.Convert(c)).ToList();
-
+					SyncCertificates();
 				return certificates;
 			}
 			set
@@ -108,8 +100,9 @@ namespace CertMS.CertificateGenerator
 			}
 		}
 
-		private CertificateListDto certificate;
+		private void SyncCertificates() => Task.Factory.StartNew(() => Certificates = CallProgramWith(AppProperties.CRUD, AppProperties.CRUDGetAll).Split(';').Select(CertificateParser.Convert).ToList());
 
+		private CertificateListDto certificate;
 		public CertificateListDto SelectedCertificate
 		{
 			get => certificate;
@@ -119,8 +112,6 @@ namespace CertMS.CertificateGenerator
 				RaisePropertyChanged(nameof(SelectedCertificate));
 			}
 		}
-
-		private const string SearchPath = "CertMSSearch";
 
 		private string searchText;
 
@@ -135,7 +126,8 @@ namespace CertMS.CertificateGenerator
 		}
 
 		public RelayCommand Search =>
-			new RelayCommand(obj => Certificates = CallProgramWith(SearchPath, "search", CertificateParser.ConvertToBase64(searchText)).Split(';').Select(c => parser.Convert(c)).ToList(),
+			new RelayCommand(obj => Certificates = CallProgramWith(AppProperties.Search, AppProperties.SearchCommand, CertificateParser.ConvertToBase64(searchText))
+					.Split(';').Select(CertificateParser.Convert).ToList(),
 				() => !string.IsNullOrWhiteSpace(SearchText));
 
 		private string signGame;
@@ -162,9 +154,7 @@ namespace CertMS.CertificateGenerator
 			}
 		}
 
-		private const string GamePath = "CertMSGame";
-
-		public RelayCommand Sign => new RelayCommand(obj => Signature = CallProgramWith(GamePath, "sign", Convert.ToBase64String(Encoding.ASCII.GetBytes(SignGame))),
+		public RelayCommand Sign => new RelayCommand(obj => Signature = CallProgramWith(AppProperties.Game, AppProperties.GameSign, CertificateParser.ConvertToBase64(SignGame)),
 			() => !string.IsNullOrWhiteSpace(SignGame));
 
 		private string verifyGame;
@@ -180,7 +170,7 @@ namespace CertMS.CertificateGenerator
 		}
 
 		public RelayCommand Verify => new RelayCommand(obj =>
-			DialogHelper.ShowMessageBox(CallProgramWith(GamePath, "verify", Convert.ToBase64String(Encoding.ASCII.GetBytes(VerifyGame)), Signature).Trim().Equals("True")
+			DialogHelper.ShowMessageBox(CallProgramWith(AppProperties.Game, AppProperties.GameVerify, CertificateParser.ConvertToBase64(VerifyGame), Signature).Trim().Equals("True")
 				? "Pair valid"
 				: "Invalid data/signature pair"), () => !string.IsNullOrWhiteSpace(VerifyGame) && !string.IsNullOrWhiteSpace(Signature));
 

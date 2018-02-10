@@ -1,6 +1,4 @@
-﻿using System.Windows.Controls;
-
-namespace CertMS
+﻿namespace CertMS.CustomControls
 {
 	public partial class CertificatesList
 	{
