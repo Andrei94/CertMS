@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Net.Http;
+using System.Windows;
 
 namespace CertMS.Helpers
 {
@@ -14,11 +15,18 @@ namespace CertMS.Helpers
                 values.Add(i.ToString(), arguments[i]);
             values.Add("correlationId", Guid.NewGuid().ToString());
             var content = new FormUrlEncodedContent(values);
+            try
+            {
+                var response = client.PostAsync($"http://localhost:8080/start/{program}", content).Result;
+                var responseString = response.Content.ReadAsStringAsync().Result;
+                return responseString;
+            }
+            catch (AggregateException)
+            {
+                MessageBox.Show($"Error communicating with {program}", "CertMS", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
 
-            var response = client.PostAsync($"http://localhost:8080/start/{program}", content).Result;
-
-            var responseString = response.Content.ReadAsStringAsync().Result;
-            return responseString;
+            return string.Empty;
         }
     }
 }
