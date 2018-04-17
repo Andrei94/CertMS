@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:customControls="clr-namespace:CertMS.CustomControls"
         mc:Ignorable="d"
-        Title="MainWindow" Height="400" Width="525">
+        Title="CertMS" Height="400" Width="525">
 	<Grid>
 		<TabControl>
 			<TabItem Header="Generate Certificate">
@@ -27,13 +27,10 @@
 							<Button Content="Generate"
 							        Margin="5"
 							        Command="{Binding GenerateCertificate}" />
-							<Button Content="Save"
+                            <Button Content="Save"
 							        Margin="5"
 							        Command="{Binding SaveCertificate}" />
-							<Button Content="Save Duplicate"
-							        Margin="5"
-							        Command="{Binding SaveDuplicateCertificate}" />
-						</UniformGrid>
+                        </UniformGrid>
 					</StackPanel>
 					<TextBox Margin="5"
 					         FontSize="14"

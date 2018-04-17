@@ -6,7 +6,6 @@ namespace CertMS.Helpers
 	{
 		internal static string CRUD => ConfigurationManager.AppSettings["crud"];
 		internal static string CRUDSave => ConfigurationManager.AppSettings["crudSave"];
-		internal static string CRUDSaveDuplicate => ConfigurationManager.AppSettings["crudSaveDuplicate"];
 		internal static string CRUDDelete => ConfigurationManager.AppSettings["crudDelete"];
 		internal static string CRUDUpdate => ConfigurationManager.AppSettings["crudUpdate"];
 		internal static string CRUDGetAll => ConfigurationManager.AppSettings["crudGetAll"];

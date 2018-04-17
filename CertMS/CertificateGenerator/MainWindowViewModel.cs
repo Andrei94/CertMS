@@ -63,8 +63,6 @@ namespace CertMS.CertificateGenerator
 				DialogHelper.ShowMessageBox(response);
 			}, IsCertificateGenerated);
 
-		public RelayCommand SaveDuplicateCertificate => new RelayCommand(obj => DialogHelper.ShowMessageBox(CallProgramWith(AppProperties.CRUD, AppProperties.CRUDSaveDuplicate)));
-
 		public RelayCommand DeleteCertificate =>
 			new RelayCommand(obj =>
 			{
